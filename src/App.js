@@ -2,6 +2,7 @@ import React from 'react';
 import './App.css';
 // import Introduction from './components/introduction';
 import Header from './components/Header';
+import Map from './components/Map';
 
 class App extends React.Component {
   constructor(props){
@@ -16,6 +17,7 @@ class App extends React.Component {
     return (
       <div className="App">
         <Header appName={this.state.applicationName}  />
+        <Map />
       </div>
     );
   }
