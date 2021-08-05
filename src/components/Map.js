@@ -1,5 +1,6 @@
 import React from "react";
 import mapboxgl from "mapbox-gl";
+import './map.css';
 
 class Map extends React.Component {
     constructor(props){
@@ -32,11 +33,43 @@ class Map extends React.Component {
                     "data": this.state.data
                 },
                 'paint': {
-                    'circle-radius': 6,
+                    'circle-radius': 8,
                     'circle-color': '#B42222'
                 }
             });
             console.log("load-data", this.state.data);
+        });
+
+        map.on('click', 'points', function (e) {
+            var coordinates = e.features[0].geometry.coordinates.slice();
+            var properties = e.features[0].properties;
+             
+            // Ensure that if the map is zoomed out such that multiple
+            // copies of the feature are visible, the popup appears
+            // over the copy being pointed to.
+            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            }
+             
+            new mapboxgl.Popup()
+            .setLngLat(coordinates)
+            .setHTML(`
+                <strong>${properties.description}</strong>
+                <em>${properties.duration}</em>
+                <em>${properties.impact}</em>
+                <p>${properties.details}</p>
+            `)
+            .addTo(map);
+        });
+             
+        // Change the cursor to a pointer when the mouse is over the places layer.
+        map.on('mouseenter', 'points', function () {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+             
+        // Change it back to a pointer when it leaves.
+        map.on('mouseleave', 'points', function () {
+            map.getCanvas().style.cursor = '';
         });
 
         this.setState({ map });
