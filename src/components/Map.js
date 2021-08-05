@@ -3,25 +3,27 @@ import mapboxgl from "mapbox-gl";
 import './map.css';
 
 class Map extends React.Component {
+
     constructor(props){
         super(props);
         this.state = {
-            api_url: "https://data.edmonton.ca/resource/k4tx-5k8p.json",
+            
             map: false,
             viewport: { 
                 zoom: 10,
                 center: [-113.4909, 53.5444]
             },
-            data: null
+           
         }
     }
 
-    initializeMap(){
+
+    static initializeMap(state, viewport){
         mapboxgl.accessToken = 'pk.eyJ1IjoiYWZhcTEyMzQ1IiwiYSI6ImNrcndrY2ltbTBoZWoycG94Y3ljNW9yNXkifQ.YeekAmHni0RhHU3LAz3-1Q';
         let map = new mapboxgl.Map({
             container: 'map', // container ID
             style: 'mapbox://styles/mapbox/streets-v11', // style URL
-            ...this.state.viewport
+            ...viewport
         });
 
         map.on('load', () => {
@@ -30,14 +32,13 @@ class Map extends React.Component {
                 'type': 'circle',
                 'source': {
                     "type": "geojson",
-                    "data": this.state.data
+                    "data": state.data
                 },
                 'paint': {
                     'circle-radius': 8,
                     'circle-color': '#B42222'
                 }
             });
-            console.log("load-data", this.state.data);
         });
 
         map.on('click', 'points', function (e) {
@@ -72,55 +73,18 @@ class Map extends React.Component {
             map.getCanvas().style.cursor = '';
         });
 
-        this.setState({ map });
+        return { map };
     }
 
-    createFeatureCollection(data){
-        let feature = [];
-        data.forEach( (mark) => 
-            feature.push(
-                {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [
-                            parseFloat(mark.point.coordinates[0]),
-                            parseFloat(mark.point.coordinates[1])   
-                        ] 
-                    },
-                    "properties": {
-                        "description": mark.description, 
-                        "duration": mark.duration,
-                        "impact": mark.impact,
-                        "details": mark.details
-                    }
-                }
-            )
-        )
-
-        return {
-            "type": "FeatureCollection",
-            "features": feature
-        };
-
+    static getDerivedStateFromProps(nextProps, prevState){
+        const {data, map} = nextProps;
+        if (data && !map) return Map.initializeMap(nextProps, prevState.viewport)
+        else return null;
     }
 
-    componentDidMount(){
-        const {data, api_url } = this.state;
-
-        if( !data ){
-            fetch(api_url, { method: 'GET' })
-            .then( response => response.json())
-            .then( response => this.createFeatureCollection(response))
-            .then( response => this.setState({
-                data: response
-            }))
-        }
-    }
+    
 
     render (){
-        const {data, map} = this.state;
-        if (data && !map) this.initializeMap();
         return (
             <div style={{  width: 1100, height: 600, }} id="map" />
         );
