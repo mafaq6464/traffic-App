@@ -26,7 +26,7 @@ class Header extends Component {
                 <Collapse isOpen={this.state.isOpen} navbar>
                     <Nav navbar>
                         <NavItem>
-                            <NavLink href="/">1000 Traffic Accidents</NavLink>
+                            <NavLink href="/">{this.props.count} Traffic Accidents</NavLink>
                         </NavItem>
                     </Nav>
                 </Collapse>
